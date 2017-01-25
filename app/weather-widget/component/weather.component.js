@@ -9,17 +9,96 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 var core_1 = require('@angular/core');
+var weather_service_1 = require('../service/weather.service');
+var weather_1 = require('../model/weather');
+var location_1 = require('../model/location');
+var constants_1 = require('../constants/constants');
 var WeatherComponent = (function () {
-    function WeatherComponent() {
+    function WeatherComponent(service) {
+        this.service = service;
+        this.weatherData = new weather_1.Weather(null, null, null, null, null);
+        this.currentSpeedUnit = "mph";
+        this.currentTempUnit = "fahrenheit";
+        this.currentLocation = new location_1.Location(null, null);
+        this.icons = new Skycons();
+        this.dataReceived = false;
+        this.objDate = Date.now();
     }
+    WeatherComponent.prototype.ngOnInit = function () {
+        this.getCurrentLocation();
+    };
+    WeatherComponent.prototype.getCurrentLocation = function () {
+        var _this = this;
+        this.service.getCurrentLocation()
+            .subscribe(function (position) {
+            _this.pos = position;
+            _this.getCurrentWeather();
+            _this.getLocationName();
+        }, function (err) { return console.error(err); });
+    };
+    WeatherComponent.prototype.getCurrentWeather = function () {
+        var _this = this;
+        this.service.getCurrentWeather(this.pos.coords.latitude, this.pos.coords.longitude)
+            .subscribe(function (weather) {
+            _this.weatherData.temp = weather["currently"]["temperature"],
+                _this.weatherData.summary = weather["currently"]["summary"],
+                _this.weatherData.wind = weather["currently"]["windSpeed"],
+                _this.weatherData.humidity = weather["currently"]["humidity"],
+                _this.weatherData.icon = weather["currently"]["icon"];
+            console.log("Weather ", _this.weatherData);
+            _this.setIcon();
+            _this.dataReceived = true;
+            _this.objDate = Date.now();
+        }, function (err) { return console.log(err); });
+    };
+    WeatherComponent.prototype.getLocationName = function () {
+        var _this = this;
+        this.service.getLocationName(this.pos.coords.latitude, this.pos.coords.longitude)
+            .subscribe(function (location) {
+            _this.currentLocation.city = location["results"][1]["address_components"][0]["long_name"];
+            _this.currentLocation.state = location["results"][1]["address_components"][2]["short_name"];
+            console.log(location);
+        }, function (err) { return console.error(err); });
+    };
+    WeatherComponent.prototype.toggleTempUnits = function () {
+        if (this.currentTempUnit == "fahrenheit") {
+            this.currentTempUnit = "celsius";
+        }
+        else {
+            this.currentTempUnit = "fahrenheit";
+        }
+    };
+    WeatherComponent.prototype.toggleSpeedUnits = function () {
+        if (this.currentSpeedUnit == "mph") {
+            this.currentSpeedUnit = "kph";
+        }
+        else {
+            this.currentSpeedUnit = "mph";
+        }
+    };
+    WeatherComponent.prototype.setIcon = function () {
+        this.icons.add("icon", this.weatherData.icon);
+        this.icons.play();
+    };
+    WeatherComponent.prototype.setStyles = function () {
+        if (this.weatherData.icon) {
+            this.icons.color = constants_1.WEATHER_COLORS[this.weatherData.icon]["color"];
+            return constants_1.WEATHER_COLORS[this.weatherData.icon];
+        }
+        else {
+            this.icons.color = constants_1.WEATHER_COLORS["default"]["color"];
+            return constants_1.WEATHER_COLORS["default"];
+        }
+    };
     WeatherComponent = __decorate([
         core_1.Component({
             moduleId: module.id,
             selector: 'weather-widget',
             templateUrl: 'weather.component.html',
-            styleUrls: ['weather.component.css']
+            styleUrls: ['weather.component.css'],
+            providers: [weather_service_1.WeatherService]
         }), 
-        __metadata('design:paramtypes', [])
+        __metadata('design:paramtypes', [weather_service_1.WeatherService])
     ], WeatherComponent);
     return WeatherComponent;
 }());
