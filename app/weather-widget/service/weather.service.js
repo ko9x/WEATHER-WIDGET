@@ -51,7 +51,7 @@ var WeatherService = (function () {
             .map(function (loc) { return loc.json(); })
             .catch(function (err) {
             console.error("Unable to get location - ", err);
-            return Observable_1.Observable.throw(err);
+            return Observable_1.Observable.throw(err.json());
         });
     };
     WeatherService = __decorate([

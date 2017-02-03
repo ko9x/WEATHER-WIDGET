@@ -48,7 +48,7 @@ export class WeatherService {
             .map(loc => loc.json())
             .catch(err => {
                 console.error("Unable to get location - ", err);
-                return Observable.throw(err);
+                return Observable.throw(err.json());
             })
     }
 }
