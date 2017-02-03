@@ -35,7 +35,6 @@ Add this script tag to the index html to get the Skycons working
 
 You will also need to import the following to your app module
 
-
 import { JsonpModule, HttpModule } from '@angular/http'; //  IF NOT ALREADY IMPORTED
 
 import { WeatherComponent } from './weather-widget/component/weather.component'
